@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Task;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class TaskController extends Controller
 {
@@ -14,7 +15,10 @@ class TaskController extends Controller
      */
     public function index()
     {
-        //
+        $tasks = Task::query()->get();
+        return view('tasks.index', [
+            'tasks' => $tasks,
+        ]);
     }
 
     /**
@@ -24,7 +28,10 @@ class TaskController extends Controller
      */
     public function create()
     {
-        //
+        $task = new Task();
+        return view('tasks.create', [
+            'task' => $task,
+        ]);
     }
 
     /**
@@ -35,7 +42,15 @@ class TaskController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $data = $request->except('_token');
+        $task = new Task();
+        $this->validate($request, Task::rules($task));
+        $result = $task->fill($data)->save();
+        if ($result) {
+            return redirect()->route('tasks.index')->with('success', 'Задание создано успешно!');
+        } else {
+            return redirect()->route('tasks.index')->with('error', 'Ошибка создания задания!');
+        }
     }
 
     /**
@@ -46,7 +61,9 @@ class TaskController extends Controller
      */
     public function show(Task $task)
     {
-        //
+        return view('tasks.show', [
+            'task' => $task,
+        ]);
     }
 
     /**
@@ -57,7 +74,9 @@ class TaskController extends Controller
      */
     public function edit(Task $task)
     {
-        //
+        return view('tasks.edit', [
+           'task' => $task,
+        ]);
     }
 
     /**
@@ -69,7 +88,14 @@ class TaskController extends Controller
      */
     public function update(Request $request, Task $task)
     {
-        //
+        $data = $request->except('_token');
+        $this->validate($request, Task::rules($task));
+        $result = $task->fill($data)->save();
+        if ($result) {
+            return redirect()->route('tasks.index')->with('success', 'Задание изменено успешно!');
+        } else {
+            return redirect()->route('tasks.index')->with('error', 'Ошибка изменения задания!');
+        }
     }
 
     /**
@@ -80,6 +106,7 @@ class TaskController extends Controller
      */
     public function destroy(Task $task)
     {
-        //
+        $task->delete();
+        return redirect()->route('Admin.news.index')->with('success', 'Задание удалено успешно!');
     }
 }
